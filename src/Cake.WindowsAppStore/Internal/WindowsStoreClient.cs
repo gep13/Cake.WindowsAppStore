@@ -27,17 +27,17 @@ namespace Cake.WindowsAppStore.Internal
 
             if (string.IsNullOrEmpty(settings.ClientId))
             {
-                throw new ArgumentNullException("settings.ClientId", $"You have to either specify a ClientId or define the {WindowsAppStoreAppAliases.ClientId} environment variable.");
+                throw new ArgumentNullException("settings.ClientId", $"You have to either specify a ClientId or define the {WindowsAppStoreAliases.ClientId} environment variable.");
             }
 
             if (string.IsNullOrEmpty(settings.ClientSecret))
             {
-                throw new ArgumentNullException("settings.ClientSecret", $"You have to either specify a ClientSecret or define the {WindowsAppStoreAppAliases.ClientSecret} environment variable.");
+                throw new ArgumentNullException("settings.ClientSecret", $"You have to either specify a ClientSecret or define the {WindowsAppStoreAliases.ClientSecret} environment variable.");
             }
 
             if (string.IsNullOrEmpty(settings.TenantId))
             {
-                throw new ArgumentNullException("settings.TenantId", $"You have to either specify a TenantId or define the {WindowsAppStoreAppAliases.TenantId} environment variable.");
+                throw new ArgumentNullException("settings.TenantId", $"You have to either specify a TenantId or define the {WindowsAppStoreAliases.TenantId} environment variable.");
             }
 
             var appId = settings.ApplicationId;

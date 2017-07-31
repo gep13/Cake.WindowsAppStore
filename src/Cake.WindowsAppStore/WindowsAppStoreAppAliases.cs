@@ -19,7 +19,7 @@ namespace Cake.WindowsAppStore
     /// </code>
     /// </summary>
     [CakeAliasCategory("WindowsAppStore")]
-    public static class WindowsAppStoreAppAliases
+    public static class WindowsAppStoreAliases
     {
         public const string ClientId = "WINDOWSAPPSTORE_CLIENT_ID";
         public const string ClientSecret = "WINDOWSAPPSTORE_CLIENT_SECRET";
