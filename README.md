@@ -33,8 +33,19 @@ To create a submission, use the code below:
 ```cake
 CreateWindowsStoreAppSubmission("./output/myApp.appxupload", new WindowsStoreAppSubmissionSettings
 {
+    ApplicationId = "my app id"
+});
+```
+
+If you don't have the secrets stored in environment variables, use the code below:
+
+```cake
+CreateWindowsStoreAppSubmission("./output/myApp.appxupload", new WindowsStoreAppSubmissionSettings
+{
     ApplicationId = "my app id",
-    
+	ClientId = "<client_id>",
+    ClientSecret = "<client_secret>",
+	TenantId = "<tenant_id>"
 });
 ```
 
