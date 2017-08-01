@@ -9,6 +9,8 @@ namespace Cake.WindowsAppStore.Internal
     using System.Net.Http;
     using Newtonsoft.Json.Linq;
 
+    // Note: For details on the implementation, see https://docs.microsoft.com/en-us/windows/uwp/monetize/csharp-code-examples-for-the-windows-store-submission-api
+
     internal class WindowsStoreClient
     {
         private readonly ICakeLog _log;
@@ -46,9 +48,11 @@ namespace Cake.WindowsAppStore.Internal
             var serviceEndpoint = settings.ServiceUrl;
             var tokenEndpoint = settings.TokenEndpoint;
 
+            _log.Information("Starting app submission");
+
             _log.Debug("Getting access token for the Windows Store");
 
-            var accessToken = await IngestionClient.GetClientCredentialAccessToken(tokenEndpoint, clientId, clientSecret);
+            var accessToken = await IngestionClient.GetClientCredentialAccessToken(tokenEndpoint, clientId, clientSecret, settings.Scope);
 
             _log.Debug("Getting application from the Windows Store");
 

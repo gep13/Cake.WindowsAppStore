@@ -1,7 +1,10 @@
 namespace Cake.WindowsAppStore
 {
+    using Cake.WindowsAppStore.Internal;
+
     /// <summary>
-    /// Contains settings used by <see cref="Cake.WindowsAppStore.Internal.HockeyAppClient" />
+    /// Contains settings used by <see cref="WindowsStoreClient" />
+    /// <para />
     /// For a detailed information look at the official <see href="https://docs.microsoft.com/en-us/windows/uwp/monetize/csharp-code-examples-for-the-windows-store-submission-api#create-app-submission">API Documentation</see>
     /// </summary>
     public class WindowsStoreAppSubmissionSettings : WindowsStoreSettingsBase

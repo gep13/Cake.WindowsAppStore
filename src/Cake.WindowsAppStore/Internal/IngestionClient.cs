@@ -1,6 +1,4 @@
-﻿// Note: this code comes from https://docs.microsoft.com/en-us/windows/uwp/monetize/csharp-code-examples-for-the-windows-store-submission-api#ingestionclient-helper-class
-
-namespace Cake.WindowsAppStore.Internal
+﻿namespace Cake.WindowsAppStore.Internal
 {
     using System;
     using System.Collections.Generic;
@@ -11,6 +9,8 @@ namespace Cake.WindowsAppStore.Internal
     using System.Threading.Tasks;
     using Newtonsoft.Json;
     using Microsoft.WindowsAzure.Storage.Blob;
+
+    // Note: this code comes from https://docs.microsoft.com/en-us/windows/uwp/monetize/csharp-code-examples-for-the-windows-store-submission-api#ingestionclient-helper-class
 
     /// <summary>
     /// This class is a proxy that abstracts the functionality of the API service
