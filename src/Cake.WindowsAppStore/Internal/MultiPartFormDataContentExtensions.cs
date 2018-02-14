@@ -9,10 +9,14 @@
         public static void AddIfNotEmpty(this MultipartFormDataContent content, string name, string value)
         {
             if (!name.StartsWith("\""))
+            {
                 name = $"\"{name}\"";
+            }
 
-            if(!string.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(value))
+            {
                 content.Add(new StringContent(value), name);
+            }
         }
 
         public static void AddIfNotEmpty(this MultipartFormDataContent content, string name, string fileName, Stream stream)

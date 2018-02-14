@@ -126,12 +126,9 @@
             using (HttpClient client = new HttpClient())
             {
                 string tokenUrl = tokenEndpoint;
-                using (
-                    HttpRequestMessage request = new HttpRequestMessage(
-                        HttpMethod.Post,
-                        tokenUrl))
+                using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post,tokenUrl))
                 {
-                    string strContent =
+                    var strContent =
                         string.Format(
                             "grant_type=client_credentials&client_id={0}&client_secret={1}&resource={2}",
                             clientId,

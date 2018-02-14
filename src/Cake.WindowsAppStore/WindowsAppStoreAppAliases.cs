@@ -1,12 +1,11 @@
-﻿using Cake.WindowsAppStore.Internal;
-
-namespace Cake.WindowsAppStore
+﻿namespace Cake.WindowsAppStore
 {
     using System;
     using Core;
     using Core.Annotations;
     using Core.Diagnostics;
     using Core.IO;
+    using Internal;
 
     /// <summary>
     /// <para>Contains functionality related to Windows Apps Store.</para>

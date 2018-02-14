@@ -252,3 +252,4 @@ paket-files/
 *.sln.iml
 BuildArtifacts/
 tools/
+src/Cake.WindowsAppStore/Properties/launchSettings.json
