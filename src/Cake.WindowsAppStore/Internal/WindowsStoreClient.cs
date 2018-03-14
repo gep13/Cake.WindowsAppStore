@@ -135,7 +135,7 @@ namespace Cake.WindowsAppStore.Internal
 
             clonedSubmission.applicationPackages = JToken.FromObject(packagesToProcess.ToArray());
 
-            _log.Information("Uploading new package to the cloned submission, this can take a while...");
+            _log.Information($"Uploading new package '{file.FullPath}' to the cloned submission, this can take a while...");
 
             var fileUploadUrl = clonedSubmission.fileUploadUrl.Value as string;
 
