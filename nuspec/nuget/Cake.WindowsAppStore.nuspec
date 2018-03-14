@@ -15,23 +15,8 @@
     <repository type="GitHub" url="https://github.com/cake-contrib/Cake.WindowsAppStore" />
   </metadata>
   <files>
-    <file src="net45\Cake.WindowsAppStore.dll" target="lib/net45" />
-    <file src="net45\Cake.WindowsAppStore.pdb" target="lib/net45" />
-    <file src="net45\Cake.WindowsAppStore.xml" target="lib/net45" />
-    <file src="net45\Microsoft.Azure.KeyVault.Core.dll" target="lib/net45" />
-	<file src="net45\Microsoft.Data.Edm.dll" target="lib/net45" />
-	<file src="net45\Microsoft.Data.Edm.resources.dll" target="lib/net45" />
-	<file src="net45\Microsoft.Data.OData.dll" target="lib/net45" />
-	<file src="net45\Microsoft.Data.OData.resources.dll" target="lib/net45" />
-	<file src="net45\Microsoft.Data.Services.Client.dll" target="lib/net45" />
-	<file src="net45\Microsoft.Data.Services.Client.resources.dll" target="lib/net45" />
-	<file src="net45\Microsoft.WindowsAzure.Storage.dll" target="lib/net45" />
-	<file src="net45\Newtonsoft.Json.dll" target="lib/net45" />
-	<file src="net45\System.Spatial.dll" target="lib/net45" />
-	<file src="net45\System.Spatial.resources.dll" target="lib/net45" />
-	
-    <file src="netstandard1.6\Cake.WindowsAppStore.dll" target="lib/netstandard1.6" />
-    <file src="netstandard1.6\Cake.WindowsAppStore.pdb" target="lib/netstandard1.6" />
-    <file src="netstandard1.6\Cake.WindowsAppStore.xml" target="lib/netstandard1.6" />
+    <file src="netstandard2.0\Cake.WindowsAppStore.dll" target="lib/netstandard2.0" />
+    <file src="netstandard2.0\Cake.WindowsAppStore.pdb" target="lib/netstandard2.0" />
+    <file src="netstandard2.0\Cake.WindowsAppStore.xml" target="lib/netstandard2.0" />
   </files>
 </package>
