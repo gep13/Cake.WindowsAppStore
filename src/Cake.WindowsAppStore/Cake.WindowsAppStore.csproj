@@ -1,59 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <TargetFrameworks>net46;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Cake.WindowsAppStore</AssemblyName>
     <PackageId>Cake.WindowsAppStore</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    <Copyright>Copyright 2017 (c) Geert van Horrik and contributors</Copyright>
+    <Copyright>Copyright 2017 - 2018 (c) Geert van Horrik and contributors</Copyright>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/cake-contrib/Cake.WindowsAppStore</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/cake-contrib/Cake.WindowsAppStore/develop/Cake.WindowsAppStore.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/cake-contrib/Cake.WindowsAppStore</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <PackageTags>Cake Script Build Windows Store Deployment</PackageTags>
+    <PackageTags>Cake Script Build Microsoft Windows Store Deployment</PackageTags>
     <Description>WindowsAppStore Addin for Cake Build Automation System.</Description>
     <Authors>Geert van Horrik, Cake Contributors</Authors>
     <PackageLicenseUrl>https://raw.githubusercontent.com/cake-contrib/Cake.WindowsAppStore/master/LICENSE.md</PackageLicenseUrl>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net46|AnyCPU'">
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net46|AnyCPU'">
-    <DebugType>full</DebugType>
-    <DebugSymbols>True</DebugSymbols>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net46|AnyCPU'">
-    <DebugType>full</DebugType>
-    <DebugSymbols>True</DebugSymbols>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Cake.Core" Version="0.23.0">
+    <PackageReference Update="NETStandard.Library" Version="2.0.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Cake.Core" Version="0.26.1">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="GitLink" Version="3.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
-    <PackageReference Include="WindowsAzure.Storage" Version="8.6.0" />
-  </ItemGroup>
-  
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <Reference Include="System" />
-	<Reference Include="System.Core" />
-	<Reference Include="System.Dynamic.Runtime" />
-	<Reference Include="System.Linq.Expressions" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.1.0" />
   </ItemGroup>
 
 </Project>
