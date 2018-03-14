@@ -9,6 +9,7 @@ BuildParameters.SetParameters(context: Context,
                             repositoryOwner: "cake-contrib",
                             repositoryName: "Cake.WindowsAppStore",
                             appVeyorAccountName: "cakecontrib",
+                            shouldRunDotNetCorePack: true,
                             shouldRunDupFinder: false);
 
 BuildParameters.PrintParameters(Context);
