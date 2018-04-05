@@ -42,6 +42,9 @@ namespace Cake.WindowsAppStore.Internal
                 throw new ArgumentNullException("settings.TenantId", $"You have to either specify a TenantId or define the {WindowsAppStoreAliases.TenantId} environment variable.");
             }
 
+            var handledErrors = new HashSet<string>();
+            var handledWarnings = new HashSet<string>();
+
             var appId = settings.ApplicationId;
             var clientId = settings.ClientId;
             var clientSecret = settings.ClientSecret;
@@ -67,13 +70,11 @@ namespace Cake.WindowsAppStore.Internal
                     appId),
                 requestContent: null);
 
-            var lastPublishedDate = app.lastPublishedApplicationSubmission;
-            if (lastPublishedDate == null)
+            var lastPublishedApplicationSubmission = app.lastPublishedApplicationSubmission;
+            if (lastPublishedApplicationSubmission == null)
             {
                 throw new InvalidOperationException("You need at least one published submission to create new submissions through API");
             }
-            
-            _log.Information($"App was last published on {lastPublishedDate}");
 
             var pendingSubmission = app.pendingApplicationSubmission;
             if (pendingSubmission != null)
@@ -109,6 +110,8 @@ namespace Cake.WindowsAppStore.Internal
                     appId),
                 requestContent: null);
 
+            LogStatusDetails(clonedSubmission.statusDetails, handledWarnings, handledErrors);
+
             var clonedSubmissionId = clonedSubmission.id.Value as string;
 
             _log.Information("Cloned submission, updating specified fields");
@@ -129,13 +132,14 @@ namespace Cake.WindowsAppStore.Internal
 
             packagesToProcess.Add(new
             {
-                fileStatus = "PendingUpload",
-                fileName = "package.appxupload",
+                //fileName = "package.appxupload",
+                fileName = file.GetFilename().FullPath,
+                fileStatus = "PendingUpload"
             });
 
             clonedSubmission.applicationPackages = JToken.FromObject(packagesToProcess.ToArray());
 
-            _log.Information($"Uploading new package '{file.FullPath}' to the cloned submission, this can take a while...");
+            _log.Information($"Uploading new package '{file.FullPath}' to the cloned submission, this can take a while (depending on size & internet speed)...");
 
             var fileUploadUrl = clonedSubmission.fileUploadUrl.Value as string;
 
@@ -143,7 +147,7 @@ namespace Cake.WindowsAppStore.Internal
 
             _log.Information("Updating the cloned submission");
 
-            await client.Invoke<dynamic>(
+            var updatedSubmission = await client.Invoke<dynamic>(
                 HttpMethod.Put,
                 relativeUrl: string.Format(
                     CultureInfo.InvariantCulture,
@@ -153,6 +157,8 @@ namespace Cake.WindowsAppStore.Internal
                     appId,
                     clonedSubmissionId),
                 requestContent: clonedSubmission);
+
+            LogStatusDetails(updatedSubmission.statusDetails, handledWarnings, handledErrors);
 
             _log.Information("Committing the submission");
 
@@ -167,7 +173,7 @@ namespace Cake.WindowsAppStore.Internal
                     clonedSubmissionId),
                 requestContent: null);
 
-            _log.Information("Waiting for the submission commit processing to complete.This may take a couple of minutes");
+            _log.Information("Waiting for the submission commit processing to complete. This may take a couple of minutes...");
 
             string submissionStatus = null;
 
@@ -189,8 +195,12 @@ namespace Cake.WindowsAppStore.Internal
                 submissionStatus = statusResource.status.Value as string;
 
                 _log.Debug("Current status: " + submissionStatus);
+
+                LogStatusDetails(statusResource.statusDetails, handledWarnings, handledErrors);
             }
             while ("CommitStarted".Equals(submissionStatus));
+
+            _log.Information($"Final submission status: '{submissionStatus}'");
 
             var result = new WindowsStoreAppSubmissionResult
             {
@@ -224,6 +234,46 @@ namespace Cake.WindowsAppStore.Internal
             }
 
             return result;
+        }
+
+        private void LogStatusDetails(dynamic statusDetails, HashSet<string> handledWarnings, HashSet<string> handledErrors)
+        {
+            if (statusDetails == null)
+            {
+                return;
+            }
+
+            var warnings = statusDetails.warnings;
+            if (warnings != null)
+            {
+                foreach (var warning in warnings)
+                {
+                    var warningCode = warning.code.Value;
+
+                    if (!handledWarnings.Contains(warningCode))
+                    {
+                        _log.Warning($"[{warningCode}] {warning.details.Value}");
+
+                        handledWarnings.Add(warningCode);
+                    }
+                }
+            }
+
+            var errors = statusDetails.errors;
+            if (errors != null)
+            {
+                foreach (var error in errors)
+                {
+                    var errorCode = error.code.Value;
+
+                    if (!handledErrors.Contains(errorCode))
+                    {
+                        _log.Error($"[{errorCode}] {error.details.Value}");
+
+                        handledErrors.Add(errorCode);
+                    }
+                }
+            }
         }
     }
 }

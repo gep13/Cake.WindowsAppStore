@@ -158,7 +158,7 @@
         /// <returns>A task which will complete when the file finishes uploading</returns>
         public static async Task UploadFileToBlob(string fileName, string sasUrl)
         {
-            using (Stream stream = new FileStream(fileName, FileMode.Open))
+            using (var stream = new FileStream(fileName, FileMode.Open))
             {
                 var blockBob = new CloudBlockBlob(new Uri(sasUrl));
                 await blockBob.UploadFromStreamAsync(stream);
