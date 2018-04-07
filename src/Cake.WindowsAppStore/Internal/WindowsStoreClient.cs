@@ -6,6 +6,7 @@ namespace Cake.WindowsAppStore.Internal
     using System.Threading.Tasks;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO.Compression;
     using System.Net.Http;
     using Newtonsoft.Json.Linq;
 
@@ -42,6 +43,9 @@ namespace Cake.WindowsAppStore.Internal
                 throw new ArgumentNullException("settings.TenantId", $"You have to either specify a TenantId or define the {WindowsAppStoreAliases.TenantId} environment variable.");
             }
 
+            var handledErrors = new HashSet<string>();
+            var handledWarnings = new HashSet<string>();
+
             var appId = settings.ApplicationId;
             var clientId = settings.ClientId;
             var clientSecret = settings.ClientSecret;
@@ -67,25 +71,23 @@ namespace Cake.WindowsAppStore.Internal
                     appId),
                 requestContent: null);
 
-            var lastPublishedDate = app.lastPublishedApplicationSubmission;
-            if (lastPublishedDate == null)
+            var lastPublishedApplicationSubmission = app.lastPublishedApplicationSubmission;
+            if (lastPublishedApplicationSubmission == null)
             {
                 throw new InvalidOperationException("You need at least one published submission to create new submissions through API");
             }
-            
-            _log.Information($"App was last published on {lastPublishedDate}");
 
             var pendingSubmission = app.pendingApplicationSubmission;
             if (pendingSubmission != null)
             {
-                _log.Warning($"Detected pending application submission, deleting that one first (no worries, this will only delete submission created via an API, never manual submissions)");
+                _log.Warning($"Detected pending application submission, deleting that one first (no worries, this will only delete submissions created via an API, never manual submissions)");
 
                 var submissionId = app.pendingApplicationSubmission.id.Value as string;
 
                 // Try deleting it. If it was NOT created via the API, then you need to manually
                 // delete it from the dashboard. This is done as a safety measure to make sure that a
                 // user and an automated system don't make conflicting edits.
-                client.Invoke<dynamic>(
+                await client.Invoke<dynamic>(
                     HttpMethod.Delete,
                     relativeUrl: string.Format(
                         CultureInfo.InvariantCulture,
@@ -94,7 +96,7 @@ namespace Cake.WindowsAppStore.Internal
                         IngestionClient.Tenant,
                         appId,
                         submissionId),
-                    requestContent: null).Wait();
+                    requestContent: null);
             }
 
             _log.Information("Cloning last submission");
@@ -108,6 +110,8 @@ namespace Cake.WindowsAppStore.Internal
                     IngestionClient.Tenant,
                     appId),
                 requestContent: null);
+
+            LogStatusDetails(clonedSubmission.statusDetails, handledWarnings, handledErrors);
 
             var clonedSubmissionId = clonedSubmission.id.Value as string;
 
@@ -127,23 +131,42 @@ namespace Cake.WindowsAppStore.Internal
                 packagesToProcess.Add(applicationPackage);
             }
 
+            var fileName = file.GetFilename().FullPath;
+
             packagesToProcess.Add(new
             {
+                fileName = fileName,
                 fileStatus = "PendingUpload",
-                fileName = "package.appxupload",
+                minimumDirectXVersion = "None",
+                minimumSystemRam = "None"
             });
 
             clonedSubmission.applicationPackages = JToken.FromObject(packagesToProcess.ToArray());
 
-            _log.Information($"Uploading new package '{file.FullPath}' to the cloned submission, this can take a while...");
+            using (var temporaryFilesContext = new TemporaryFilesContext())
+            {
+                _log.Information($"Packing the file(s) to a zip package in preparation for upload");
 
-            var fileUploadUrl = clonedSubmission.fileUploadUrl.Value as string;
+                var storeUploadFolder = temporaryFilesContext.GetDirectory("StoreUpload");
 
-            await IngestionClient.UploadFileToBlob(file.FullPath, fileUploadUrl);
+                // Copy all files into the temporary folder
+                var targetAppxUploadFileName = System.IO.Path.Combine(storeUploadFolder, fileName);
+                System.IO.File.Copy(file.FullPath, targetAppxUploadFileName, true);
+
+                // Finally zip them
+                var storeUploadFile = temporaryFilesContext.GetFile("StoreUpload.zip", true);
+                ZipFile.CreateFromDirectory(storeUploadFolder, storeUploadFile);
+
+                _log.Information($"Uploading new package '{file.FullPath}' to the cloned submission, this can take a while (depending on size & internet speed)...");
+
+                var fileUploadUrl = clonedSubmission.fileUploadUrl.Value as string;
+
+                await IngestionClient.UploadFileToBlob(storeUploadFile, fileUploadUrl);
+            }
 
             _log.Information("Updating the cloned submission");
 
-            await client.Invoke<dynamic>(
+            var updatedSubmission = await client.Invoke<dynamic>(
                 HttpMethod.Put,
                 relativeUrl: string.Format(
                     CultureInfo.InvariantCulture,
@@ -154,6 +177,8 @@ namespace Cake.WindowsAppStore.Internal
                     clonedSubmissionId),
                 requestContent: clonedSubmission);
 
+            LogStatusDetails(updatedSubmission.statusDetails, handledWarnings, handledErrors);
+            
             _log.Information("Committing the submission");
 
             await client.Invoke<dynamic>(
@@ -167,7 +192,7 @@ namespace Cake.WindowsAppStore.Internal
                     clonedSubmissionId),
                 requestContent: null);
 
-            _log.Information("Waiting for the submission commit processing to complete.This may take a couple of minutes");
+            _log.Information("Waiting for the submission commit processing to complete. This may take a couple of minutes...");
 
             string submissionStatus = null;
 
@@ -189,8 +214,12 @@ namespace Cake.WindowsAppStore.Internal
                 submissionStatus = statusResource.status.Value as string;
 
                 _log.Debug("Current status: " + submissionStatus);
+
+                LogStatusDetails(statusResource.statusDetails, handledWarnings, handledErrors);
             }
             while ("CommitStarted".Equals(submissionStatus));
+
+            _log.Information($"Final submission status: '{submissionStatus}'");
 
             var result = new WindowsStoreAppSubmissionResult
             {
@@ -224,6 +253,46 @@ namespace Cake.WindowsAppStore.Internal
             }
 
             return result;
+        }
+
+        private void LogStatusDetails(dynamic statusDetails, HashSet<string> handledWarnings, HashSet<string> handledErrors)
+        {
+            if (statusDetails == null)
+            {
+                return;
+            }
+
+            var warnings = statusDetails.warnings;
+            if (warnings != null)
+            {
+                foreach (var warning in warnings)
+                {
+                    var warningCode = warning.code.Value;
+
+                    if (!handledWarnings.Contains(warningCode))
+                    {
+                        _log.Warning($"[{warningCode}] {warning.details.Value}");
+
+                        handledWarnings.Add(warningCode);
+                    }
+                }
+            }
+
+            var errors = statusDetails.errors;
+            if (errors != null)
+            {
+                foreach (var error in errors)
+                {
+                    var errorCode = error.code.Value;
+
+                    if (!handledErrors.Contains(errorCode))
+                    {
+                        _log.Error($"[{errorCode}] {error.details.Value}");
+
+                        handledErrors.Add(errorCode);
+                    }
+                }
+            }
         }
     }
 }
