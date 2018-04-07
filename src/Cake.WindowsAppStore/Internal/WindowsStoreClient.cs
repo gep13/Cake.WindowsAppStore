@@ -6,6 +6,7 @@ namespace Cake.WindowsAppStore.Internal
     using System.Threading.Tasks;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO.Compression;
     using System.Net.Http;
     using Newtonsoft.Json.Linq;
 
@@ -79,14 +80,14 @@ namespace Cake.WindowsAppStore.Internal
             var pendingSubmission = app.pendingApplicationSubmission;
             if (pendingSubmission != null)
             {
-                _log.Warning($"Detected pending application submission, deleting that one first (no worries, this will only delete submission created via an API, never manual submissions)");
+                _log.Warning($"Detected pending application submission, deleting that one first (no worries, this will only delete submissions created via an API, never manual submissions)");
 
                 var submissionId = app.pendingApplicationSubmission.id.Value as string;
 
                 // Try deleting it. If it was NOT created via the API, then you need to manually
                 // delete it from the dashboard. This is done as a safety measure to make sure that a
                 // user and an automated system don't make conflicting edits.
-                client.Invoke<dynamic>(
+                await client.Invoke<dynamic>(
                     HttpMethod.Delete,
                     relativeUrl: string.Format(
                         CultureInfo.InvariantCulture,
@@ -95,7 +96,7 @@ namespace Cake.WindowsAppStore.Internal
                         IngestionClient.Tenant,
                         appId,
                         submissionId),
-                    requestContent: null).Wait();
+                    requestContent: null);
             }
 
             _log.Information("Cloning last submission");
@@ -130,20 +131,38 @@ namespace Cake.WindowsAppStore.Internal
                 packagesToProcess.Add(applicationPackage);
             }
 
+            var fileName = file.GetFilename().FullPath;
+
             packagesToProcess.Add(new
             {
-                //fileName = "package.appxupload",
-                fileName = file.GetFilename().FullPath,
-                fileStatus = "PendingUpload"
+                fileName = fileName,
+                fileStatus = "PendingUpload",
+                minimumDirectXVersion = "None",
+                minimumSystemRam = "None"
             });
 
             clonedSubmission.applicationPackages = JToken.FromObject(packagesToProcess.ToArray());
 
-            _log.Information($"Uploading new package '{file.FullPath}' to the cloned submission, this can take a while (depending on size & internet speed)...");
+            using (var temporaryFilesContext = new TemporaryFilesContext())
+            {
+                _log.Information($"Packing the file(s) to a zip package in preparation for upload");
 
-            var fileUploadUrl = clonedSubmission.fileUploadUrl.Value as string;
+                var storeUploadFolder = temporaryFilesContext.GetDirectory("StoreUpload");
 
-            await IngestionClient.UploadFileToBlob(file.FullPath, fileUploadUrl);
+                // Copy all files into the temporary folder
+                var targetAppxUploadFileName = System.IO.Path.Combine(storeUploadFolder, fileName);
+                System.IO.File.Copy(file.FullPath, targetAppxUploadFileName, true);
+
+                // Finally zip them
+                var storeUploadFile = temporaryFilesContext.GetFile("StoreUpload.zip", true);
+                ZipFile.CreateFromDirectory(storeUploadFolder, storeUploadFile);
+
+                _log.Information($"Uploading new package '{file.FullPath}' to the cloned submission, this can take a while (depending on size & internet speed)...");
+
+                var fileUploadUrl = clonedSubmission.fileUploadUrl.Value as string;
+
+                await IngestionClient.UploadFileToBlob(storeUploadFile, fileUploadUrl);
+            }
 
             _log.Information("Updating the cloned submission");
 
@@ -159,7 +178,7 @@ namespace Cake.WindowsAppStore.Internal
                 requestContent: clonedSubmission);
 
             LogStatusDetails(updatedSubmission.statusDetails, handledWarnings, handledErrors);
-
+            
             _log.Information("Committing the submission");
 
             await client.Invoke<dynamic>(
