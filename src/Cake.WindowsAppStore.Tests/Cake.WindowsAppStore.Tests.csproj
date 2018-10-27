@@ -13,7 +13,7 @@
   <ItemGroup>
     <PackageReference Include="NETStandard.Library" Version="2.0.1" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.1.1" />
-    <PackageReference Include="Cake.Core" Version="0.26.1" />
+    <PackageReference Include="Cake.Core" Version="0.28.0" />
     <PackageReference Include="FakeItEasy" Version="4.5.1" />
     <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="15.7.0" />
     <PackageReference Include="xunit" Version="2.3.1" />
