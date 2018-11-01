@@ -4,7 +4,7 @@
     using System.Net.Http;
     using System.Net.Http.Headers;
 
-    public static class MultiPartFormDataContentExtensions
+    internal static class MultiPartFormDataContentExtensions
     {
         public static void AddIfNotEmpty(this MultipartFormDataContent content, string name, string value)
         {
