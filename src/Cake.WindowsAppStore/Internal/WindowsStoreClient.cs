@@ -58,6 +58,11 @@ namespace Cake.WindowsAppStore.Internal
 
             var accessToken = await IngestionClient.GetClientCredentialAccessToken(tokenEndpoint, clientId, clientSecret, settings.Scope);
 
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new InvalidOperationException($"No access token could be retrieved via OAuth, double check your tokens or create a new client secret");
+            }
+
             _log.Debug("Getting application from the Windows Store");
 
             var client = new IngestionClient(accessToken, serviceEndpoint);

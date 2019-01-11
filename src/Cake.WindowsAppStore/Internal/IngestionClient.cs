@@ -117,7 +117,7 @@
             string clientSecret,
             string scope = null)
         {
-            if (scope == null)
+            if (scope is null)
             {
                 scope = "https://manage.devcenter.microsoft.com";
             }

@@ -1,6 +1,7 @@
 ﻿namespace Cake.WindowsAppStore
 {
     using System;
+    using System.Diagnostics;
     using Core;
     using Core.Annotations;
     using Core.Diagnostics;
@@ -47,6 +48,13 @@
         [CakeMethodAlias]
         public static WindowsStoreAppSubmissionResult CreateWindowsStoreAppSubmission(this ICakeContext context, FilePath file, WindowsStoreAppSubmissionSettings settings)
         {
+#if DEBUG
+            if (!Debugger.IsAttached)
+            {
+                Debugger.Launch();
+            }
+#endif
+
             settings = settings ?? new WindowsStoreAppSubmissionSettings();
 
             var client = new WindowsStoreClient(context.Log);
