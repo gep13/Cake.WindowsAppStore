@@ -10,7 +10,8 @@ BuildParameters.SetParameters(context: Context,
                             repositoryName: "Cake.WindowsAppStore",
                             appVeyorAccountName: "cakecontrib",
                             shouldRunDotNetCorePack: true,
-                            shouldRunDupFinder: false);
+                            shouldRunDupFinder: false,
+                            shouldRunGitVersion: true);
 
 BuildParameters.PrintParameters(Context);
 
