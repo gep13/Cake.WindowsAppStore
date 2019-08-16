@@ -11,18 +11,18 @@
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/cake-contrib/Cake.WindowsAppStore</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/cake-contrib/Cake.WindowsAppStore/develop/Cake.WindowsAppStore.png</PackageIconUrl>
-    <RepositoryUrl>https://github.com/cake-contrib/Cake.WindowsAppStore</RepositoryUrl>
+    <RepositoryUrl>https://github.com/cake-contrib/Cake.WindowsAppStore.git</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <PackageTags>Cake Script Build Microsoft Windows Store Deployment</PackageTags>
     <Description>WindowsAppStore Addin for Cake Build Automation System.</Description>
     <Authors>Geert van Horrik, Cake Contributors</Authors>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/cake-contrib/Cake.WindowsAppStore/master/LICENSE.md</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Update="NETStandard.Library" Version="2.0.1" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Cake.Core" Version="0.26.1">
       <PrivateAssets>All</PrivateAssets>
